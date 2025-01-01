@@ -3,15 +3,15 @@ const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const fetch = require('node-fetch');
 const _ = require('lodash');
 const db = require('./db');
-const sync = require('./sync'); 
+const sync = require('./sync');
 
 const client = new Client({
     intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.MessageContent,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
     ]
-  });
+});
 
   const formatNumber = (num) => {
     return new Intl.NumberFormat('en-US', {
@@ -19,11 +19,21 @@ const client = new Client({
     }).format(num);
   };
   
-  client.on('ready', () => {
-    sync.forceSyncNow();
-    console.log(`Logged in as ${client.user.tag}!`);
-    console.log('Bot is ready!');
-  });
+  client.on('ready', async () => {
+    try {
+        console.log('Initializing database...');
+        await db.initDatabase();
+        console.log('Database initialized');
+        
+        console.log(`Logged in as ${client.user.tag}!`);
+        console.log('Bot is ready!');
+        
+        // Now that database is initialized, start the sync
+        await sync.forceSyncNow();
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
+});
   
   client.on('error', error => {
     console.error('Discord client error:', error);
